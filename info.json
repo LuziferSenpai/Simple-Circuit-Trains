@@ -1,0 +1,14 @@
+{
+	"name": "Simple_Circuit_Trains",
+	"version": "0.1.0",
+	"title": "Simple Circuit Trains",
+	"author": "LuziferSenpai",
+	"Licence": "Custom",
+	"description": "This Modification allows you to control Trains via the Circuit Network.",
+	"dependencies":
+	[
+		"base >= 0.17",
+		"?Automatic_Coupling_System >= 0.2.3"
+	],
+	"factorio_version": "0.17"
+}
