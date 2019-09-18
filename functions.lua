@@ -1,175 +1,370 @@
-local F = {}
+local Functions = {}
 
-F.Globals = function()
-	global.Lines = global.Lines or {}
-	global.ScheduleLines = global.ScheduleLines or {}
-	global.ScheduleLinesSignals = global.ScheduleLinesSignals or {}
+Functions.Globals = function()
+	global.Position = global.Position or {}
+	global.GUIS = global.GUIS or {}
 	global.TrainsID = global.TrainsID or {}
+	global.Lines = global.Lines or
+	{
+		Number = 0,
+		Schedules = {},
+		LineNames = {},
+		ChooseElem = {},
+		Stations = {},
+		ChooseElemStations = {}
+	}
+	global.ChooseElemLines = global.ChooseElemLines or
+	{
+		fluid = {},
+		item = {},
+		virtual = {}
+	}
+	global.LineNames = global.LineNames or {}
 end
 
-F.Players = function()
+Functions.Players = function()
 	for _, p in pairs( game.players ) do
-		local m = mod_gui.get_button_flow( p )
-		if not m.CircuitTrainsGUIButton then
-			local b = F.AddSpriteButton( m, "CircuitTrainsGUIButton", "Senpais-Smart-Stop-Icon" )
-		end
+		Functions.PlayerStart( p.index )
 	end
 end
 
-F.MainGUI = function( p )
-	local A01 = F.AddFrame( p, "CircuitTrainsGUI", "outer_frame_without_shadow" )
-	local A02 = F.AddTable( A01, "CircuitTrainsTable01", 2 )
-	A02.vertical_centering = false
-	local A03 =
+Functions.MainGUI = function( parent, player_id )
+	local A = {}
+
+	A["01"] = Functions.AddFrame( parent, "CircuitFrameAGUI01", "dialog_frame" )
+	A["02"] =
 	{
-		F.AddFrame( A02, "CircuitTrainsHiddenFrame01", "outer_frame_without_shadow" ),
-		F.AddFrame( A02, "CircuitTrainsHiddenFrame02", "outer_frame_without_shadow" ),
+		["01"] = Functions.AddFlow( A["01"], "CircuitFlowAGUI01", "horizontal", "circuittitlebarfow" ),
+		["02"] = Functions.AddLine( A["01"], "CircuitLineAGUI01", "horizontal" ),
+		["03"] = Functions.AddFlow( A["01"], "CircuitFlowAGUI02", "horizontal", "circuittitlebarfow" ),
+		["04"] = Functions.AddLine( A["01"], "CircuitLineAGUI02", "horizontal" ),
+		["05"] = Functions.AddFlow( A["01"], "CircuitFlowAGUI03", "horizontal" )
+	}
+	A["03"] =
+	{
+		["01"] = Functions.AddLabel( A["02"]["01"], "CircuitLabelAGUI01", { "Circuit.Title"}, "frame_title" ),
+		["02"] = Functions.AddWidget( A["02"]["01"], "CircuitWidgetAGUI01", "draggable_space_header" ),
+		["03"] = Functions.AddSpriteButton( A["02"]["01"], "CircuitSpriteButtonAGUI01", "utility/close_white", "close_button" ),
+		
+		["04"] = Functions.AddLabel( A["02"]["03"], "CircuitLabelAGUI02", { "Circuit.LineTitle" }, "caption_label" ),
+		["05"] = Functions.AddWidget( A["02"]["03"], "CircuitWidgetAGUI02" ),
+		["06"] = Functions.AddDropDown( A["02"]["03"], "CircuitDropDownAGUI01", global.Lines.LineNames ),
+		["07"] = Functions.AddChooseElemButton( A["02"]["03"], "CircuitChooseElemAGUI01", "circuitchooselem" ),
+		["08"] = Functions.AddSpriteButton( A["02"]["03"], "CircuitSpriteButtonAGUI02", "Senpais-plus", "circuitclosebutton" ),
+		["09"] = Functions.AddSpriteButton( A["02"]["03"], "CircuitSpriteButtonAGUI03", "utility/remove", "circuitclosebutton" ),
+		
+		["10"] = Functions.AddLabel( A["02"]["05"], "CircuitLabelAGUI03", { "Circuit.Name" } ),
+		["11"] = Functions.AddTextField( A["02"]["05"], "CircuitTextFieldAGUI01", "" ),
+		["12"] = Functions.AddChooseElemButton( A["02"]["05"], "CircuitChooseElemAGUI02", "circuitchooselem" ),
+		["13"] = Functions.AddWidget( A["02"]["05"], "CircuitWidgetAGUI03" ),
+		["14"] = Functions.AddButton( A["02"]["05"], "CircuitButtonAGUI01", { "Circuit.AddLine" } )
 	}
 
-	local A04 = F.AddFrame( A03[1], "CircuitTrainsFrame01", nil, { "CircuitTrains.Line" } )
-	local A05 = F.AddTable( A04, "CircuitTrainsTable02", 4 )
-	local A06 =
-	{
-		F.AddDropDown( A05, "CircuitTrainsDropDown", global.Lines ),
-		F.AddChooseElemButton( A05, "CircuitTrainsChooseElemButton01", nil ),
-		F.AddSpriteButton( A05, "CircuitTrainsSpriteButton01", "Senpais-plus" ),
-		F.AddSpriteButton( A05, "CircuitTrainsSpriteButton02", "utility/trash_bin" )
-	}
+	A["01"].location = global.Position[player_id]
+	
+	A["02"]["02"].style.top_margin = 4
+	A["02"]["02"].style.bottom_margin = 8
+	A["02"]["03"].style.bottom_margin = 8
+	A["02"]["04"].style.top_margin = 0
+	A["02"]["04"].style.bottom_margin = 8
+	A["02"]["04"].visible = false
+	A["02"]["05"].style.horizontally_stretchable = true
+	A["02"]["05"].style.vertical_align = "center"
+	A["02"]["05"].style.horizontal_align = "left"
+	A["02"]["05"].style.horizontal_spacing = 6
+	A["02"]["05"].style.bottom_margin = 8
+	A["02"]["05"].visible = false
+
+	A["03"]["02"].style.horizontally_stretchable = true
+	A["03"]["02"].style.natural_height = 24
+	A["03"]["02"].style.minimal_width = 24
+	A["03"]["02"].drag_target = A["01"]
+	A["03"]["05"].style.horizontally_stretchable = true
+	A["03"]["05"].style.minimal_width = 24
+	A["03"]["11"].style.width = 110
+	A["03"]["13"].style.horizontally_stretchable = true
+
+	global.GUIS[player_id].A = A
 end
 
-F.ListGUI = function( p, l )
-	local B01 = F.AddScrollPane( p, "CircuitTrainsScrollPane" )
-	B01.style.maximal_height = 300
+Functions.MainGUIToggle = function( player_id )
+	local player = game.players[player_id]
+	local screen = player.gui.screen
 
-	local B02 = F.AddFrame( B01, "CircuitTrainsFrame02", "image_frame", nil )
-	B02.style.left_padding = 4
-	B02.style.right_padding = 8
-	B02.style.bottom_padding = 4
-	B02.style.top_padding = 4
+	if screen.CircuitFrameAGUI01 then
+		local GUI = global.GUIS[player_id].A["01"]
+		GUI.visible = not GUI.visible
+	else
+		Functions.MainGUI( screen, player_id )
+	end
+end
 
-	local B03 = 
+Functions.MainGUIAddToggle = function( player_id )
+	local GUI = global.GUIS[player_id].A["02"]
+	GUI["04"].visible = not GUI["04"].visible
+	GUI["05"].visible = not GUI["05"].visible
+end
+
+Functions.ListGUI = function( parent, player_id, index_number )
+	if type( global.GUIS[player_id].B ) == "table" then global.GUIS[player_id].B["01"].destroy() end
+	
+	local B = {}
+
+	B["01"] = Functions.AddScrollPane( parent, "CircuitScrollPaneBGUI01", "vertical" )
+	B["02"] = Functions.AddFrame( B["01"], "CircuitFrameBGUI01", "image_frame" )
+	B["03"] =
 	{
-		F.AddTable( B02, "CircuitTrainsTable03", 2 ),
-		F.AddLabel( B02, "CircuitTrainsHiddenLabel01", l )
+		["01"] = Functions.AddFlow( B["02"], "CircuitFlowBGUI01", "horizontal", "circuitlistflow" ),
+		["02"] = Functions.AddLine( B["02"], "CircuitLineBGUI01", "horizontal" )
 	}
-	B03[1].style.horizontal_spacing = 16
-	B03[1].style.vertical_spacing = 8
-	B03[1].style.column_alignments[2] = "right"
-	B03[1].draw_horizontal_line_after_headers = true
-	B03[1].draw_vertical_lines = true
-	B03[2].visible = false
-
-	local B04 =
+	B["04"] =
 	{
-		F.AddLabel( B03[1], "CircuitTrainsLabel01", { "CircuitTrains.Stations" } ),
-		F.AddLabel( B03[1], "CircuitTrainsLabel02", { "CircuitTrains.Signals" } )
+		["01"] = Functions.AddLabel( B["03"]["01"], "CircuitLabelBGUI01", { "Circuit.Stations" } ),
+		["02"] = Functions.AddWidget( B["03"]["01"], "CircuitWidgetBGUI01" ),
+		["03"] = Functions.AddLabel( B["03"]["01"], "CircuitLabelBGUI02", { "Circuit.Signals" } )
 	}
+	B["05"] = {}
+	B["06"] = {}
+	B["07"] = {}
+	B["08"] = {}
+	B["09"] = {}
 
-	for _, c in pairs( global.ScheduleLinesSignals[l] ) do
-		local st = c.st
-		local s = F.CheckSignal( c.s )
-		if s == nil then
-			c.s = nil
+	B["01"].style.maximal_height = 350
+
+	B["02"].style.left_padding = 4
+	B["02"].style.right_padding = 8
+	B["02"].style.bottom_padding = 4
+	B["02"].style.top_padding = 4
+	B["03"]["01"].style.vertical_align = "center"
+
+	B["04"]["02"].style.horizontally_stretchable = true
+	B["04"]["02"].style.minimal_width = 30
+
+	local Stations = global.Lines.Stations[index_number]
+	local stations = Stations.Stations
+
+	for index, station in pairs( stations ) do
+		B["05"][index] = Functions.AddFlow( B["02"], "CircuitFlowListBGUI" .. index, "horizontal", "circuitlistflow" )
+		B["06"][index] = Functions.AddLabel( B["05"][index], "CircuitLabelListBGUI" .. index, station )
+		B["07"][index] = Functions.AddWidget( B["05"][index], "CircuitWidgetListBGUI" .. index )
+		B["08"][index] = Functions.AddChooseElemButton( B["05"][index], "CircuitChooseElemListBGUI" .. index, "circuitchooselem" )
+		if type( stations[Functions.Format2Digit( tonumber( index ) + 1 ) ] ) == "string" then
+			B["09"][index] = Functions.AddLine( B["02"], "CircuitLineListBGUI" .. index, "horizontal" )
 		end
-		local B05 =
+
+		B["05"][index].style.vertical_align = "center"
+		B["06"][index].style.maximal_width = 400
+		B["06"][index].style.single_line = false
+		B["07"][index].style.horizontally_stretchable = true
+		B["07"][index].style.minimal_width = 30
+		B["08"][index].elem_value = Stations.ChooseElem[index]
+	end
+
+	global.GUIS[player_id].B = B
+end
+
+--Player Data creation
+Functions.PlayerStart = function( player_id )
+	local player = game.players[player_id]
+	local button_flow = mod_gui.get_button_flow( player )
+
+	if not button_flow.CircuitButton then
+		local b = Functions.AddSpriteButton( button_flow, "CircuitButton", "Senpais-Smart-Stop-Icon" )
+	end
+
+	global.Position[player_id] = global.Position[player_id] or { x = 5, y = 85 * player.display_scale }
+	global.GUIS[player_id] = global.GUIS[player_id] or {}
+end
+
+Functions.AddLines = function( addtype, player_id, text, chooselem, schedule, choosestations, stations )
+	if addtype == "new" then
+		local player = game.players[player_id]
+
+		if global.LineNames[text] then
+			player.print( { "Circuit.AlreadyExist" } )
+
+			return false
+		elseif type( chooselem ) == "table" then
+			if global.ChooseElemLines[chooselem.type][chooselem.name] then
+				player.print( { "Circuit.Signalused" } )
+
+				return false
+			end
+		end
+	end
+
+	local Lines = global.Lines
+	Lines.Number = Lines.Number + 1
+
+	if Lines.Number < 1000 then
+		local index_number = Functions.Format3Digit( Lines.Number )
+
+		Lines.Schedules[index_number] = schedule
+		Lines.LineNames[index_number] = text
+		Lines.ChooseElem[index_number] = chooselem
+		Lines.ChooseElemStations[index_number] = choosestations or
 		{
-			F.AddLabel( B03[1], "CircuitTrainsLabel03_" .. st, st ),
-			F.AddChooseElemButton( B03[1], "CircuitTrainsChooseElemButton02_" .. st, s )
+			fluid = {},
+			item = {},
+			virtual = {}
 		}
+
+		if type( chooselem ) == "table" then
+			global.ChooseElemLines[chooselem.type][chooselem.name] = index_number
+		end
+		
+		global.LineNames[text] = index_number
+
+		local Stations = stations or
+		{
+			Number = 0,
+			Stations = {},
+			ChooseElem = {}
+		}
+
+		if Stations.Number == 0 then
+			for _, entry in pairs( schedule.records ) do
+				Stations.Number = Stations.Number + 1
+	
+				if Stations.Number < 100 then
+					local index_number2 = Functions.Format2Digit( Stations.Number )
+	
+					Stations.Stations[index_number2] = entry.station
+					Stations.ChooseElem[index_number2] = nil
+				else
+					break
+				end
+			end
+		end
+
+		Lines.Stations[index_number] = Stations
+		global.Lines = Lines
+
+		if type( player_id ) == "number" then
+			global.GUIS[player_id].A["03"]["06"].items = Lines.LineNames
+		end
+		
+		return true
+	else
+		if type( player_id ) == "number" then
+			player.print( "CircuitPresetsError1000" )
+		end
+
+		return false
 	end
 end
 
-F.AddGUI = function( p )
-	local C01 = F.AddFrame( p, "CircuitTrainsFrame03", nil, { "CircuitTrains.NewLine" } )
-	local C02 = 
-	{
-		F.AddTable( C01, "CircuitTrainsTable04", 2 ),
-		F.AddButton( C01, "CircuitTrainsButton", { "CircuitTrains.AddLine" } )
-	}
+--Checks the Signal if they still exist and if they are allowed
+Functions.CheckSignal = function( signal )
+	if type( signal ) == "table" then
+		local name = signal.name
+		local signaltype = signal.type
 
-	local C03 =
-	{
-		F.AddTextField( C02[1], "CircuitTrainsTextField", nil ),
-		F.AddChooseElemButton( C02[1], "CircuitTrainsChooseElemButton03", nil )
-	}
-end
-
-F.AddButton = function( f, n, c )
-	return f.add{ type = "button", name = n, caption = c }
-end
-
-F.AddChooseElemButton = function( f, n, s )
-	return f.add{ type = "choose-elem-button", name = n, elem_type = "signal", signal = s }
-end
-
-F.AddDropDown = function( f, n, i )
-	return f.add{ type = "drop-down", name = n, items = i }
-end
-
-F.AddFrame = function( f, n, s, c )
-	return f.add{ type = "frame", name = n, direction = "vertical", style = s, caption = c }
-end
-
-F.AddLabel = function( f, n, c )
-	return f.add{ type = "label", name = n, caption = c }
-end
-
-F.AddScrollPane = function( f, n )
-	return f.add{ type = "scroll-pane", name = n }
-end
-
-F.AddSpriteButton = function( f, n, s )
-	return f.add{ type = "sprite-button", name = n, sprite = s }
-end
-
-F.AddTable = function( f, n, c )
-	return f.add{ type = "table", name = n, column_count = c }
-end
-
-F.AddTextField = function( f, n, t )
-	return f.add{ type = "textfield", name = n, text = t }
-end
-
-F.CheckSignal = function( s )
-	if s ~= nil then
-		local n = s.name
-		local t = s.type
-		if game.active_mods["Automatic_Coupling_System"] and ( n == "signal-couple" or n == "signal-decouple" ) then
+		if game.active_mods["Automatic_Coupling_System"] and ( name == "signal-couple" or name == "signal-decouple" ) then
 			return nil
-		elseif t == "fluid" then
-			if not game.fluid_prototypes[n] then
-				return nil
-			end
-		elseif t == "item" then
-			if not game.item_prototypes[n] then
-				return nil
-			end
-		elseif t == "virtual" then
-			if not game.virtual_signal_prototypes[n] then
-				return nil
-			end
+		elseif signaltype == "fluid" and not game.fluid_prototypes[name] then
+			return nil
+		elseif signaltype == "item" and not game.item_prototypes[name] then
+			return nil
+		elseif signaltype == "virtual" and not game.virtual_signal_prototypes[name] then
+			return nil
 		end
-		return s
+
+		return signal
 	else
 		return nil
 	end
 end
 
-F.ClearSchedule = function( s )
-	local u = {}
-	local r = {}
-	for i, o in pairs( s.records ) do
-		if u[o.station] then
-			s.records[i] = nil
+--Clears Schedules from duplicates
+Functions.ClearSchedule = function( schedule )
+	local used = {}
+	local tablerecords = {}
+	local records = schedule.records
+
+	for index, entry in pairs( records ) do
+		if used[entry.station] then
+			records[index] = nil
 		else
-			u[o.station] = true
+			used[entry.station] = true
 		end
 	end
-	for _, o in pairs( s.records ) do
-		table.insert( r, o )
+
+	for _, record in pairs( records ) do
+		table.insert( tablerecords, record )
 	end
-	s.records = r
-	return s
+
+	schedule.records = tablerecords
+
+	return schedule
 end
 
-return F
+Functions.ClearLineSignal = function( signal, index_number )
+	global.Lines.ChooseElem[index_number] = nil
+	global.ChooseElemLines[signal.type][signal.name] = nil
+end
+
+Functions.ClearStationSignal = function( signal, index, index_number )
+	global.Lines.Stations[index_number].ChooseElem[index] = nil
+	global.Lines.ChooseElemStations[index_number][signal.type][signal.name] = nil
+end
+
+--Formation every Number to a 2long Number
+Functions.Format2Digit = function( number )
+	return string.format( "%02d", number )
+end
+
+--Formation every Number to a 3long Number
+Functions.Format3Digit = function( number )
+	return string.format( "%03d", number )
+end
+
+Functions.AddButton = function( parent, name, caption, style )
+	return parent.add{ type = "button", name = name, caption = caption, style = style }
+end
+
+Functions.AddChooseElemButton = function( parent, name, style )
+	return parent.add{ type = "choose-elem-button", name = name, elem_type = "signal", style = style }
+end
+
+Functions.AddDropDown = function( parent, name, items )
+	return parent.add{ type = "drop-down", name = name, items = items }
+end
+
+Functions.AddFlow = function( parent, name, direction, style )
+	return parent.add{ type = "flow", name = name, direction = direction, style = style }
+end
+
+Functions.AddFrame = function( parent, name, style )
+	return parent.add{ type = "frame", name = name, direction = "vertical", style = style }
+end
+
+Functions.AddLabel = function( parent, name, caption, style )
+	return parent.add{ type = "label", name = name, caption = caption, style = style }
+end
+
+Functions.AddLine = function( parent, name, direction )
+	return parent.add{ type = "line", name = name, direction = direction }
+end
+
+Functions.AddScrollPane = function( parent, name, direction )
+	return parent.add{ type = "scroll-pane", name = name, direction = direction }
+end
+
+Functions.AddSpriteButton = function( parent, name, sprite, style )
+	return parent.add{ type = "sprite-button", name = name, sprite = sprite, style = style }
+end
+
+Functions.AddTable = function( parent, name, column_count )
+	return parent.add{ type = "table", name = name, column_count = column_count }
+end
+
+Functions.AddTextField = function( parent, name, text )
+	return parent.add{ type = "textfield", name = name, text = text }
+end
+
+Functions.AddWidget = function( parent, name, style )
+	return parent.add{ type = "empty-widget", name = name, style = style }
+end
+
+return Functions
