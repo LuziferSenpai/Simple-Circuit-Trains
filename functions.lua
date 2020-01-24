@@ -247,7 +247,7 @@ Functions.AddLines = function( addtype, player_id, text, chooselem, schedule, ch
 		return true
 	else
 		if type( player_id ) == "number" then
-			player.print( "CircuitPresetsError1000" )
+			player.print( "Circuit.PresetsError1000" )
 		end
 
 		return false
