@@ -18,9 +18,7 @@ script.on_configuration_changed( function( event )
 			local oldversion = circuitchanges.old_version
 
 			if oldversion and circuitchanges.new_version then
-				if oldversion <= "0.1.0" then
-					log( "Converting old Data to new System" )
-					
+				if oldversion <= "0.1.0" then					
 					for _, p in pairs( game.players ) do
 						local mod_guibutton = mod_gui.get_button_flow( p )
 						local mod_guiframe = mod_gui.get_frame_flow( p )
@@ -86,6 +84,15 @@ script.on_configuration_changed( function( event )
 								end
 							end
 							Functions.AddLines( "", nil, line, Functions.CheckSignal( data.s ) , data.sc, choosestations, stations )
+						end
+					end
+				end
+
+				if oldversion <= "0.2.1" then
+					for _, p in pairs( game.players ) do
+						if next( global.GUIS[p.index] ) then
+							global.GUIS[p.index].A["01"].destroy()
+							global.GUIS[p.index] = {}
 						end
 					end
 				end

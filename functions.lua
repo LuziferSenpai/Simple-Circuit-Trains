@@ -51,7 +51,7 @@ Functions.MainGUI = function( parent, player_id )
 		["06"] = Functions.AddDropDown( A["02"]["03"], "CircuitDropDownAGUI01", global.Lines.LineNames ),
 		["07"] = Functions.AddChooseElemButton( A["02"]["03"], "CircuitChooseElemAGUI01", "circuitchooselem" ),
 		["08"] = Functions.AddSpriteButton( A["02"]["03"], "CircuitSpriteButtonAGUI02", "Senpais-plus", "circuitclosebutton" ),
-		["09"] = Functions.AddSpriteButton( A["02"]["03"], "CircuitSpriteButtonAGUI03", "utility/remove", "circuitclosebutton" ),
+		["09"] = Functions.AddSpriteButton( A["02"]["03"], "CircuitSpriteButtonAGUI03", "Senpais-remove", "circuitclosebutton" ),
 		
 		["10"] = Functions.AddLabel( A["02"]["05"], "CircuitLabelAGUI03", { "Circuit.Name" } ),
 		["11"] = Functions.AddTextField( A["02"]["05"], "CircuitTextFieldAGUI01", "" ),
