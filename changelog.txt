@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 31.05.2020
+  Bugfixes:
+    - Fixed some bugs with wire removing
+  Changes:
+    - Updated the gui
+    - Updated the code
+  Features:
+    - You can now rename stations inside the lines. I will not take responsibility, when you name your stations the same
+    - You can now remove stations inside a line
+---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 26.02.2020
   Bugfixes:
