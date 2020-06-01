@@ -12,15 +12,6 @@ data:extend
 		scale = 1
 	},
 	{
-		type = "sprite",
-		name = "Senpais-plus",
-		filename = MODNAME .. "/plus.png",
-		priority = "extra-high-no-scale",
-		width = 32,
-		height = 32,
-		scale = 1
-	},
-	{
         type = "sprite",
         name = "Senpais-remove",
         filename = MODNAME .. "/remove-icon.png",
