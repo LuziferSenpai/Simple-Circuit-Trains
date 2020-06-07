@@ -405,7 +405,7 @@ end
 local on_gui_location_changed = function( event )
     local playermeta = script_data.players[tostring( event.player_index )]
     local element = event.element
-    if element.index == playermeta.frame.index then
+    if playermeta.frame and element.index == playermeta.frame.index then
         playermeta.location = element.location
     end
 end
