@@ -380,7 +380,7 @@ local on_gui_elem_changed = function( event )
                     end
                 else
                     if type( elem ) == "table" then
-                        lines.chooseelemstations[index_number].chooseelem[elem.type][elem.name] = nil
+                        lines.chooseelemstations[index_number][elem.type][elem.name] = nil
                     end
 
                     lines.stations[index_number].chooseelem[index] = elem_value

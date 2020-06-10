@@ -1,13 +1,13 @@
 {
 	"name": "Simple_Circuit_Trains",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"title": "Simple Circuit Trains",
 	"author": "LuziferSenpai",
 	"contact": "mods@luzifersenpai.de",
 	"description": "This Modification allows you to control Trains via the Circuit Network. Tutorial on the Mod Portal.",
 	"dependencies":
 	[
-		"base >= 0.18.27",
+		"base >= 0.18.31",
 		"?Automatic_Coupling_System >= 0.2.5"
 	],
 	"factorio_version": "0.18"
