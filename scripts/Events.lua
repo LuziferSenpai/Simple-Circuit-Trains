@@ -47,27 +47,27 @@ local checksignal = function( signal )
     end
 end
 
-local clearschedule = function( schedule )
-    local used = {}
-    local tablerecords = {}
-    local records = schedule.records
+-- local clearschedule = function( schedule )
+--     local used = {}
+--     local tablerecords = {}
+--     local records = schedule.records
 
-    for index, entry in pairs( records ) do
-        if used[entry.station] then
-            records[index] = nil
-        else
-            used[entry.station] = true
-        end
-    end
+--     for index, entry in pairs( records ) do
+--         if used[entry.station] then
+--             records[index] = nil
+--         else
+--             used[entry.station] = true
+--         end
+--     end
 
-    for _, record in pairs( records ) do
-        table.insert( tablerecords, record )
-    end
+--     for _, record in pairs( records ) do
+--         table.insert( tablerecords, record )
+--     end
 
-    schedule.records = tablerecords
+--     schedule.records = tablerecords
 
-    return schedule
-end
+--     return schedule
+-- end
 
 local addline = function( add_type, player_id, text, chooseelem, schedule, choosestations, stations )
     if add_type == "new" then
@@ -240,7 +240,7 @@ local on_gui_click = function( event )
                     local schedule = entity.train.schedule
 
                     if type ( schedule ) == "table" then
-                        local boolean = addline( "addnew", player_id, text, checksignal( playermeta.addchooseelem.elem_value ), clearschedule( schedule ) )
+                        local boolean = addline( "addnew", player_id, text, checksignal( playermeta.addchooseelem.elem_value ), schedule )
 
                         if boolean then
                             playermeta.textfield.text = ""
