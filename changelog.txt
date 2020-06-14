@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.5
+Date: 10.06.2020
+  Bugfixes:
+    - Fixed a bug with wrong deletion
+    - Fixed a bug with naming lines
+    - Fixed a bug where the signal didnt get cleared up, when nothing is selected
+    - Fixed the Listox
+---------------------------------------------------------------------------------------------------
 Version: 0.3.4
 Date: 10.06.2020
   Features:

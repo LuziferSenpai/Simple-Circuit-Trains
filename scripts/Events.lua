@@ -70,7 +70,7 @@ end
 -- end
 
 local addline = function( add_type, player_id, text, chooseelem, schedule, choosestations, stations )
-    if add_type == "new" then
+    if add_type == "addnew" then
         local player = game.players[player_id]
 
         if script_data.names[text] then
@@ -205,9 +205,13 @@ local on_gui_click = function( event )
                     for _, player in pairs( script_data.players ) do
                         local listbox = player.listbox
                         if listbox then
+                            listbox.items = script_data.lines.names
+                            
                             selected_index = listbox.selected_index
 
                             if selected_index == 0 then
+                                player.linechooseelem.elem_value = nil
+
                                 player:update_station_frame( {} )
                             else
                                 index = tostring( selected_index )
@@ -222,7 +226,7 @@ local on_gui_click = function( event )
                     for _, player in pairs( script_data.players ) do
                         if player.listbox then
                             player.listbox.items = {}
-                            player.linechooseelem = nil
+                            player.linechooseelem.elem_value = nil
                             player:update_station_frame( {} )
                         end
                     end
@@ -412,9 +416,9 @@ end
 
 local on_gui_selection_state_changed = function( event )
     local element = event.element
-    local playermeta = script_data.players[tostring( event.player_index)]
 
     if element.name == "SIMPLE_DROP_01" then
+        local playermeta = script_data.players[tostring( event.player_index )]
         local index = tostring( element.selected_index )
         local lines = script_data.lines
         local elem = lines.chooseelem[index]
