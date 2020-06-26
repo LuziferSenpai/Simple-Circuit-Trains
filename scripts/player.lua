@@ -26,6 +26,8 @@ function player_data:gui( linenames )
     lineflow.add{ type = "label", caption = { "Circuit.LineTitle" }, style = "caption_label" }
     self.linechooseelem = lineflow.add{ type = "choose-elem-button", name = "SIMPLE_ELEM_01", elem_type = "signal", style = "circuitchooseelem28" }
     lineflow.add{ type = "sprite-button", name = "SIMPLE_CLICK_03", sprite = "Senpais-remove", style = "circuittoolbutton" }
+    lineflow.add{ type = "empty-widget", style = "circuitlistwidget" }
+    lineflow.add{ type = "button", name = "SIMPLE_CLICK_04", caption = { "Circuit.UpdateLine" } }
     local horizontalflow = frame.add{ type = "flow", direction = "horizontal", style = "circuitflow20" }
     self.listbox = horizontalflow.add{ type = "frame", direction = "vertical", style = "circuitlistboxframe" }.add{ type = "list-box", name = "SIMPLE_DROP_01", items = linenames, style = "circuitlistbox" }
     local stationframe = horizontalflow.add{ type = "scroll-pane", direction = "vertical", style = "circuitlistscrollpane" }.add{ type = "frame", direction = "vertical", style = "circuitstationframe" }
@@ -39,7 +41,7 @@ function player_data:gui( linenames )
     addflow.add{ type = "label", caption = { "Circuit.Name" } }
     self.textfield = addflow.add{ type = "textfield" }
     self.addchooseelem = addflow.add{ type = "choose-elem-button", elem_type = "signal", style = "circuitchooseelem28" }
-    addflow.add{ type = "button", name = "SIMPLE_CLICK_04", caption = { "Circuit.AddLine" } }
+    addflow.add{ type = "button", name = "SIMPLE_CLICK_05", caption = { "Circuit.AddLine" } }
 
     frame.location = self.location
 
@@ -68,8 +70,8 @@ function player_data:update_station_frame( stations )
             self.textfields[index] = flow.add{ type = "textfield", name = "SIMPLE_CONFIRM_01_" .. i, text = name, style = "circuitstationtextfield" }
             flow.add{ type = "empty-widget", style = "circuitlistwidget" }
             flow.add{ type = "choose-elem-button", name = "SIMPLE_ELEM_02_" .. i, elem_type = "signal", signal = stations.chooseelem[index], style = "circuitchooseelem28" }
-            flow.add{ type = "sprite-button", name = "SIMPLE_CLICK_05_" .. i, sprite = "utility/rename_icon_small_black", style = "circuittoolbutton" }
-            flow.add{ type = "sprite-button", name = "SIMPLE_CLICK_06_" .. i, sprite = "Senpais-remove", style = "circuittoolbutton" }
+            flow.add{ type = "sprite-button", name = "SIMPLE_CLICK_06_" .. i, sprite = "utility/rename_icon_small_black", style = "circuittoolbutton" }
+            flow.add{ type = "sprite-button", name = "SIMPLE_CLICK_07_" .. i, sprite = "Senpais-remove", style = "circuittoolbutton" }
             
             if i + 1 <= stations.number then
                 stationframe.add{ type = "line", direction = "horizontal", style = "circuitstationline" }

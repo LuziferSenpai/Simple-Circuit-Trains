@@ -47,28 +47,6 @@ local checksignal = function( signal )
     end
 end
 
--- local clearschedule = function( schedule )
---     local used = {}
---     local tablerecords = {}
---     local records = schedule.records
-
---     for index, entry in pairs( records ) do
---         if used[entry.station] then
---             records[index] = nil
---         else
---             used[entry.station] = true
---         end
---     end
-
---     for _, record in pairs( records ) do
---         table.insert( tablerecords, record )
---     end
-
---     schedule.records = tablerecords
-
---     return schedule
--- end
-
 local addline = function( add_type, player_id, text, chooseelem, schedule, choosestations, stations )
     if add_type == "addnew" then
         local player = game.players[player_id]
@@ -235,6 +213,62 @@ local on_gui_click = function( event )
                 player.print( { "Circuit.NoLineSelected" } )
             end
         elseif number == "04" then
+            local selected_index = playermeta.listbox.selected_index
+
+            if selected_index > 0 then
+                local entity = player.opened
+
+                if player.opened_gui_type == defines.gui_type.entity and entity.type == "locomotive" then
+                    local entityschedule = entity.train.schedule
+                    
+                    if type( entityschedule ) == "table" then
+                        local index = tostring( selected_index )
+                        local schedule = script_data.lines.schedules[index]
+                        local entityschedulerecords = entityschedule.records
+                        local schedulerecords = schedule.records
+
+                        if #entityschedulerecords > #schedulerecords then
+                            local comparerecords = {}
+
+                            for i = 1, #schedulerecords do
+                                comparerecords[i] = entityschedulerecords[i]
+                            end
+
+                            if util.table.compare( schedulerecords, comparerecords ) then
+                                local stations = script_data.lines.stations[index]
+                                
+                                for i = 1 + #schedulerecords, #entityschedulerecords do
+                                    stations.number = stations.number + 1
+
+                                    local index_number = tostring( stations.number )
+
+                                    stations.stations[index_number] = entityschedulerecords[i].station
+                                    stations.chooseelem[index_number] = nil
+                                end
+
+                                for _, Player in pairs( script_data.players ) do
+                                    if Player.frame then
+                                        local playerselected = Player.listbox.selected_index
+
+                                        if playerselected == selected_index then
+                                            Player:update_station_frame( stations )
+                                        end
+                                    end
+                                end
+                            else
+                                player.print( { "Circuit.NotTheSameSchedule" } )
+                            end
+                        else
+                            player.print( { "Circuit.NotTheSameSchedule" } )
+                        end
+                    else
+                        player.print( { "Circuit.NoSchedule" } )
+                    end
+                else
+                    player.print( { "Circuit.NoTrainOpen" } )
+                end
+            end
+        elseif number == "05" then
             local text = playermeta.textfield.text
 
             if #text > 0 then
@@ -259,9 +293,9 @@ local on_gui_click = function( event )
             else
                 player.print( { "Circuit.NoName" } )
             end
-        elseif number == "05" then
-            playermeta:toggle_editingfield( name:sub( 17 ) )
         elseif number == "06" then
+            playermeta:toggle_editingfield( name:sub( 17 ) )
+        elseif number == "07" then
             local index = name:sub( 17 )
             local number = tonumber( index )
             local index_number = tostring( playermeta.listbox.selected_index )
