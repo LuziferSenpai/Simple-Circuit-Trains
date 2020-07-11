@@ -115,7 +115,7 @@ end
 local PlayerStart = function( player_index )
     if not script_data.players[tostring( player_index )] then
         local player = player_lib.new( game.players[player_index] )
-        
+
         script_data.players[player.index] = player
     end
 end
@@ -128,7 +128,7 @@ end
 
 local on_gui_click = function( event )
     local name = event.element.name
-    
+
     if name:sub( 1, 12 ) == "SIMPLE_CLICK" then
         local player_id = event.player_index
         local player = game.players[player_id]
@@ -184,7 +184,7 @@ local on_gui_click = function( event )
                         local listbox = player.listbox
                         if listbox then
                             listbox.items = script_data.lines.names
-                            
+
                             selected_index = listbox.selected_index
 
                             if selected_index == 0 then
@@ -193,7 +193,7 @@ local on_gui_click = function( event )
                                 player:update_station_frame( {} )
                             else
                                 index = tostring( selected_index )
-                                
+
                                 player.linechooseelem.elem_value = script_data.lines.chooseelem[index]
 
                                 player:update_station_frame( script_data.lines.stations[index] )
@@ -220,7 +220,7 @@ local on_gui_click = function( event )
 
                 if player.opened_gui_type == defines.gui_type.entity and entity.type == "locomotive" then
                     local entityschedule = entity.train.schedule
-                    
+
                     if type( entityschedule ) == "table" then
                         local index = tostring( selected_index )
                         local schedule = script_data.lines.schedules[index]
@@ -236,7 +236,7 @@ local on_gui_click = function( event )
 
                             if util.table.compare( schedulerecords, comparerecords ) then
                                 local stations = script_data.lines.stations[index]
-                                
+
                                 for i = 1 + #schedulerecords, #entityschedulerecords do
                                     stations.number = stations.number + 1
 
@@ -255,6 +255,8 @@ local on_gui_click = function( event )
                                         end
                                     end
                                 end
+
+                                script_data.lines.schedules[index] = entityschedule
                             else
                                 player.print( { "Circuit.NotTheSameSchedule" } )
                             end
@@ -376,7 +378,7 @@ local on_gui_elem_changed = function( event )
 
                 if type( elem_value ) == "table" then
                     if type( elem ) == "table" and util.table.compare( elem_value, elem ) then return end
-                    
+
                     if script_data.chooseelemlines[elem_value.type][elem_value.name] then
                         if type( elem ) == "table" then
                             element.elem_value = elem
@@ -409,7 +411,7 @@ local on_gui_elem_changed = function( event )
 
             if type( elem_value ) == "table" then
                 if type( elem ) == "table" and util.table.compare( elem_value, elem ) then return end
-                
+
                 if lines.chooseelemstations[index_number][elem_value.type][elem_value.name] then
                     if type( elem ) == "table" then
                         element.elem_value = elem
@@ -479,7 +481,7 @@ local on_train_changed_state = function( event )
     local train = event.train
     local statedefines = defines.train_state.wait_station
     local defineswire = { red = defines.wire_type.red, green = defines.wire_type.green }
-    
+
     if train.state == statedefines then
         local station = train.station
 
@@ -492,7 +494,7 @@ local on_train_changed_state = function( event )
 
             if game.active_mods["Automatic_Coupling_System"] then
                 local check = remote.call( "Couple", "Check", train )
-                
+
                 if check then
                     conditions.couple = true
                 end
@@ -507,7 +509,7 @@ local on_train_changed_state = function( event )
         script_data.trainsids[train.id] = nil
 
         if not ( station and station.valid ) then return end
-        
+
         if data.circuit then
             local red = station.get_circuit_network( defineswire.red )
             local green = station.get_circuit_network( defineswire.green )
@@ -594,7 +596,7 @@ lib.add_remote_interface = function()
 		{
 			Change = function( player_id, text )
                 local playermeta = script_data.players[tostring( player_id )]
-                
+
                 if playermeta.textfield then
                     playermeta.textfield.text = text
 
@@ -628,7 +630,7 @@ lib.on_configuration_changed = function( event )
 
     local chooseelemlines = script_data.chooseelemlines
     local lines = script_data.lines
-    
+
     for signalname, lineindex in pairs( chooseelemlines.fluid ) do
         if not game.fluid_prototypes[signalname] then
             lines.chooseelem[lineindex] = nil
@@ -690,7 +692,7 @@ lib.on_configuration_changed = function( event )
                 for _, player in pairs( game.players ) do
                     local id = player.index
                     script_data.players[tostring( id )].location = global.Position[id] or { x = 5, y = 85 * player.display_scale }
-                    
+
                     if next( global.GUIS[id] ) then
                         global.GUIS[id].A["01"].destroy()
                     end
@@ -708,7 +710,7 @@ lib.on_configuration_changed = function( event )
                     local linenames = lines.LineNames
                     local schedules = lines.Schedules
                     local stations = lines.Stations
-                    
+
                     for _, entrytable in pairs( stations ) do
                         entrytable.stations = {}
                         entrytable.chooseelem = {}
