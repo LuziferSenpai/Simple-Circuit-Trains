@@ -1,3 +1,4 @@
+local mod_gui = require "mod-gui"
 local player_data = {}
 
 player_data.metatable = { __index = player_data }

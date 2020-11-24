@@ -1,5 +1,4 @@
 require "util"
-require "mod-gui"
 
 local player_lib = require "scripts/player"
 local definesevents = defines.events
