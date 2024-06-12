@@ -1,5 +1,8 @@
-if script.active_mods["debugadapter"] then require('__debugadapter__/debugadapter.lua') end
+local eventHandler = require("__core__/lualib/event_handler")
 
-local handler = require "event_handler"
+eventHandler.add_libraries({
+    require("__flib__/gui-lite"),
 
-handler.add_lib( require "scripts/Events" )
+    require("__Simple_Circuit_Trains__/scripts/events"),
+    require("__Simple_Circuit_Trains__/scripts/gui")
+})

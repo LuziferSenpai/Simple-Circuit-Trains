@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.0
+Date: 13.06.2024
+  Gui:
+    - Reworked the full GUI.
+    - Changed some gui names & error messages.
+    - Adding a line is now done by opening a train via the gui.
+  Changes:
+    - Reworked the logic to make it more efficient.
+  Features:
+    - Added tips & tricks
+    - Added tutorial
+    - Added tutorial for Automatic Coupling System integration
+---------------------------------------------------------------------------------------------------
 Version: 0.3.8
 Date: 24.11.2020
   Changes:
