@@ -131,7 +131,7 @@ local function deleteSelectedLine(eventData)
     local globalPlayer = global.players[tostring(eventData.player_index)]
     local forceIndexString = tostring(game.players[eventData.player_index].force_index)
     local selectedIndex = globalPlayer.selectedIndex
-    local lineName = global.lineList[selectedIndex]
+    local lineName = global.lineList[forceIndexString][selectedIndex]
 
     global.lineList[forceIndexString][selectedIndex] = nil
     global.lineListDisplay[forceIndexString][selectedIndex] = nil
