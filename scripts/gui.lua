@@ -101,46 +101,107 @@ local function openEditLine(eventData)
 end
 
 local function changeLineSignal(eventData)
-    local globalPlayer = global.players[tostring(eventData.player_index)]
-    local forceIndexString = tostring(game.players[eventData.player_index].force_index)
+    local playerIndexString = tostring(eventData.player_index)
+    local globalPlayer = global.players[playerIndexString]
+    local player = game.players[eventData.player_index]
+    local playerForceIndexString = tostring(player.force_index)
     local selectedIndex = globalPlayer.selectedIndex
-    local lineName = global.lineList[forceIndexString][selectedIndex]
+    local lineName = global.lineList[playerForceIndexString][selectedIndex]
     local signal = eventData.element.elem_value
 
     if signal then
-        global.lines[forceIndexString][lineName].signal = signal
-        global.lineListDisplay[forceIndexString][selectedIndex] = util.signalToRichTextImg(signal) .. " - " .. lineName
+        global.lines[playerForceIndexString][lineName].signal = signal
+        global.lineListDisplay[playerForceIndexString][selectedIndex] = util.signalToRichTextImg(signal) .. " - " .. lineName
 
-        globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[forceIndexString]
+        globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+
+        if game.is_multiplayer() then
+            for otherPlayerStringIndex, otherGlobalPlayer in pairs(global.players) do
+                if otherPlayerStringIndex ~= playerIndexString then
+                    local otherPlayer = game.players[tonumber(otherPlayerStringIndex)]
+
+                    if otherPlayer.force_index == player.force_index then
+                        if otherGlobalPlayer.guis.simpleGuiStationListBox then
+                            otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+
+                            if otherGlobalPlayer.selectedIndex == selectedIndex then
+                                otherGlobalPlayer.guis.simpleGuiLineChooseElem.elem_value = signal
+                            end
+                        end
+                    end
+                end
+            end
+        end
     else
-        eventData.element.elem_value = global.lines[forceIndexString][lineName].signal
+        eventData.element.elem_value = global.lines[playerForceIndexString][lineName].signal
     end
 end
 
 local function changeLineStationSignal(eventData)
-    local globalPlayer = global.players[tostring(eventData.player_index)]
-    local forceIndexString = tostring(game.players[eventData.player_index].force_index)
+    local playerIndexString = tostring(eventData.player_index)
+    local globalPlayer = global.players[playerIndexString]
+    local player = game.players[eventData.player_index]
+    local playerForceIndexString = tostring(player.force_index)
     local selectedIndex = globalPlayer.selectedIndex
+    local lineName = global.lineList[playerForceIndexString][selectedIndex]
     local element = eventData.element
-    local lineName = global.lineList[forceIndexString][selectedIndex]
+    local signal = element.elem_value
+    local stationIndex = element.tags.stationIndex
 
-    global.lines[forceIndexString][lineName].stations[element.tags.stationIndex].signal = element.elem_value
+    global.lines[playerForceIndexString][lineName].stations[stationIndex].signal = element.elem_value
+
+    if game.is_multiplayer() then
+        for otherPlayerStringIndex, otherGlobalPlayer in pairs(global.players) do
+            if otherPlayerStringIndex ~= playerIndexString then
+                local otherPlayer = game.players[tonumber(otherPlayerStringIndex)]
+
+                if otherPlayer.force_index == player.force_index then
+                    if otherGlobalPlayer.selectedIndex == selectedIndex then
+                        otherGlobalPlayer.guis.simpleGuiLineStationTable["simpleGuiLineStationSignal" .. stationIndex].elem_value = element.elem_value
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function deleteSelectedLine(eventData)
-    local globalPlayer = global.players[tostring(eventData.player_index)]
-    local forceIndexString = tostring(game.players[eventData.player_index].force_index)
+    local playerIndexString = tostring(eventData.player_index)
+    local globalPlayer = global.players[playerIndexString]
+    local player = game.players[eventData.player_index]
+    local playerForceIndexString = tostring(player.force_index)
     local selectedIndex = globalPlayer.selectedIndex
-    local lineName = global.lineList[forceIndexString][selectedIndex]
+    local lineName = global.lineList[playerForceIndexString][selectedIndex]
 
-    global.lineList[forceIndexString][selectedIndex] = nil
-    global.lineListDisplay[forceIndexString][selectedIndex] = nil
-    global.lines[forceIndexString][lineName] = nil
+    global.lineList[playerForceIndexString][selectedIndex] = nil
+    global.lineListDisplay[playerForceIndexString][selectedIndex] = nil
+    global.lines[playerForceIndexString][lineName] = nil
 
     globalPlayer.guis.simpleGuiStationListBox.selected_index = 0
-    globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[forceIndexString]
+    globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
     globalPlayer.guis.simpleGuiLineFrame.destroy()
     globalPlayer.selectedIndex = nil
+
+    if game.is_multiplayer() then
+        for otherPlayerStringIndex, otherGlobalPlayer in pairs(global.players) do
+            if otherPlayerStringIndex ~= playerIndexString then
+                local otherPlayer = game.players[tonumber(otherPlayerStringIndex)]
+
+                if otherPlayer.force_index == player.force_index then
+                    if otherGlobalPlayer.guis.simpleGuiStationListBox then
+                        otherGlobalPlayer.guis.simpleGuiStationListBox.selected_index = 0
+                        otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+                    end
+
+                    if otherGlobalPlayer.selectedIndex == selectedIndex then
+                        globalPlayer.selectedIndex = nil
+
+                        globalPlayer.guis.simpleGuiLineFrame.destroy()
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function changeSelectedLine(eventData)
@@ -170,15 +231,15 @@ end
 --subGuiHandlers
 local function addNewLine(eventData)
     local player = game.players[eventData.player_index]
-    local playerStringIndex = tostring(eventData.player_index)
-    local globalPlayer = global.players[playerStringIndex]
+    local playerIndexString = tostring(eventData.player_index)
+    local globalPlayer = global.players[playerIndexString]
     local entity = globalPlayer.locomotive
 
     if entity and entity.valid then
         local train = entity.train
 
         if train.schedule and next(train.schedule.records) then
-            local forceIndexString = tostring(player.force_index)
+            local playerForceIndexString = tostring(player.force_index)
             local simpleSubGuiAddChooseElem = globalPlayer.guis.simpleSubGuiAddChooseElem
             local simpleSubGuiAddTextField = globalPlayer.guis.simpleSubGuiAddTextField
             local signal = simpleSubGuiAddChooseElem.elem_value
@@ -196,7 +257,7 @@ local function addNewLine(eventData)
                 return
             end
 
-            if global.lines[forceIndexString][lineName] then
+            if global.lines[playerForceIndexString][lineName] then
                 player.print({ "sct-gui-error-messages.line-name-already-used" })
 
                 return
@@ -219,16 +280,30 @@ local function addNewLine(eventData)
             train.schedule = globalPlayer.schedule
 
             global.openTrains[tostring(train.id)] = nil
-            global.lines[forceIndexString][lineName] = lineObj
+            global.lines[playerForceIndexString][lineName] = lineObj
 
-            table.insert(global.lineList[forceIndexString], lineName)
-            table.insert(global.lineListDisplay[forceIndexString], util.signalToRichTextImg(signal) .. " - " .. lineName)
+            table.insert(global.lineList[playerForceIndexString], lineName)
+            table.insert(global.lineListDisplay[playerForceIndexString], util.signalToRichTextImg(signal) .. " - " .. lineName)
 
-            globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[forceIndexString]
+            globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
             globalPlayer.guis.simpleGuiButton.enabled = true
             globalPlayer.guis.simpleSubGuiAddTop.destroy()
             globalPlayer.locomotive = nil
             globalPlayer.schedule = nil
+
+            if game.is_multiplayer() then
+                for otherPlayerIndexString, otherGlobalPlayer in pairs(global.players) do
+                    if otherPlayerIndexString ~= playerIndexString then
+                        local otherPlayer = game.players[tonumber(otherPlayerIndexString)]
+
+                        if otherPlayer.force_index == player.force_index then
+                            if otherGlobalPlayer.guis.simpleGuiStationListBox then
+                                otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+                            end
+                        end
+                    end
+                end
+            end
         else
             player.print({ "sct-gui-error-messages.no-schedule" })
         end
@@ -240,9 +315,9 @@ local function addNewLine(eventData)
 end
 
 local function editLine(eventData)
-    local playerStringIndex = tostring(eventData.player_index)
+    local playerIndexString = tostring(eventData.player_index)
     local player = game.players[eventData.player_index]
-    local globalPlayer = global.players[playerStringIndex]
+    local globalPlayer = global.players[playerIndexString]
     local entity = globalPlayer.locomotive
 
     if entity and entity.valid then
@@ -310,6 +385,24 @@ local function editLine(eventData)
             globalPlayer.guis.simpleSubGuiEditTop.destroy()
             globalPlayer.locomotive = nil
             globalPlayer.schedule = nil
+
+            if game.is_multiplayer() then
+                for otherPlayerIndexString, otherGlobalPlayer in pairs(global.players) do
+                    if otherPlayerIndexString ~= playerIndexString then
+                        local otherPlayer = game.players[tonumber(otherPlayerIndexString)]
+
+                        if otherPlayer.force_index == player.force_index then
+                            if otherGlobalPlayer.guis.simpleGuiStationListBox then
+                                otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+
+                                if otherGlobalPlayer.selectedIndex == selectedIndex then
+                                    simpleGui.buildLineFrame(otherGlobalPlayer, lineName, lineObj)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
 
             simpleGui.buildLineFrame(globalPlayer, lineName, lineObj)
         else
@@ -466,6 +559,7 @@ function simpleGui.buildLineFrame(globalPlayer, selectedLineName, selectedLine)
 
     local stationTable = {
         type = "table",
+        name = "simpleGuiLineStationTable",
         column_count = 2
     }
 
@@ -478,6 +572,7 @@ function simpleGui.buildLineFrame(globalPlayer, selectedLineName, selectedLine)
 
         table.insert(stationTable, {
             type = "choose-elem-button",
+            name = "simpleGuiLineStationSignal" .. i,
             style = "flib_slot_default",
             elem_type = "signal",
             signal = selectedLine.stations[i].signal,
@@ -550,6 +645,7 @@ function simpleGui.buildLineFrame(globalPlayer, selectedLineName, selectedLine)
     globalPlayer.guis.simpleGuiLineFrame = elems.simpleGuiLineFrame
     globalPlayer.guis.simpleGuiLineChooseElem = elems.simpleGuiLineChooseElem
     globalPlayer.guis.simpleGuiLineEdit = elems.simpleGuiLineEdit
+    globalPlayer.guis.simpleGuiLineStationTable = elems.simpleGuiLineStationTable
 end
 
 --subGuiCreation
