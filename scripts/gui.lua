@@ -189,14 +189,20 @@ local function deleteSelectedLine(eventData)
 
                 if otherPlayer.force_index == player.force_index then
                     if otherGlobalPlayer.guis.simpleGuiStationListBox then
-                        otherGlobalPlayer.guis.simpleGuiStationListBox.selected_index = 0
-                        otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+                        if otherGlobalPlayer.guis.simpleGuiStationListBox.valid then
+                            otherGlobalPlayer.guis.simpleGuiStationListBox.selected_index = 0
+                            otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+                        else
+                            otherGlobalPlayer.guis.simpleGuiMain.destroy()
+
+                            simpleGui.buildMainGui(otherGlobalPlayer, otherPlayer)
+                        end
                     end
 
                     if otherGlobalPlayer.selectedIndex == selectedIndex then
-                        globalPlayer.selectedIndex = nil
+                        otherGlobalPlayer.selectedIndex = nil
 
-                        globalPlayer.guis.simpleGuiLineFrame.destroy()
+                        otherGlobalPlayer.guis.simpleGuiLineFrame.destroy()
                     end
                 end
             end
@@ -206,12 +212,12 @@ end
 
 local function changeSelectedLine(eventData)
     local globalPlayer = global.players[tostring(eventData.player_index)]
-    local forceIndexString = tostring(game.players[eventData.player_index].force_index)
-    local selectedLineName = global.lineList[forceIndexString][eventData.element.selected_index]
+    local playerForceIndexString = tostring(game.players[eventData.player_index].force_index)
+    local selectedLineName = global.lineList[playerForceIndexString][eventData.element.selected_index]
 
     if not selectedLineName then return end
 
-    local selectedLine = global.lines[forceIndexString][selectedLineName]
+    local selectedLine = global.lines[playerForceIndexString][selectedLineName]
 
     if not selectedLine then return end
 
@@ -285,11 +291,19 @@ local function addNewLine(eventData)
             table.insert(global.lineList[playerForceIndexString], lineName)
             table.insert(global.lineListDisplay[playerForceIndexString], util.signalToRichTextImg(signal) .. " - " .. lineName)
 
-            globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+            local lineListDisplay = global.lineListDisplay[playerForceIndexString]
+            local newSelectedIndex = #lineListDisplay
+            local selectedLineName = global.lineList[playerForceIndexString][newSelectedIndex]
+
+            globalPlayer.guis.simpleGuiStationListBox.items = lineListDisplay
+            globalPlayer.guis.simpleGuiStationListBox.selected_index = newSelectedIndex
             globalPlayer.guis.simpleGuiButton.enabled = true
+            globalPlayer.guis.simpleGuiMain.visible = true
             globalPlayer.guis.simpleSubGuiAddTop.destroy()
             globalPlayer.locomotive = nil
             globalPlayer.schedule = nil
+
+            simpleGui.buildLineFrame(globalPlayer, selectedLineName, global.lines[playerForceIndexString][selectedLineName])
 
             if game.is_multiplayer() then
                 for otherPlayerIndexString, otherGlobalPlayer in pairs(global.players) do
@@ -298,7 +312,13 @@ local function addNewLine(eventData)
 
                         if otherPlayer.force_index == player.force_index then
                             if otherGlobalPlayer.guis.simpleGuiStationListBox then
-                                otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+                                if otherGlobalPlayer.guis.simpleGuiStationListBox.valid then
+                                    otherGlobalPlayer.guis.simpleGuiStationListBox.items = lineListDisplay
+                                else
+                                    otherGlobalPlayer.guis.simpleGuiMain.destroy()
+
+                                    simpleGui.buildMainGui(otherGlobalPlayer, otherPlayer)
+                                end
                             end
                         end
                     end
@@ -376,8 +396,7 @@ local function editLine(eventData)
             global.lines[playerForceIndexString][selectedLineName] = nil
             global.lines[playerForceIndexString][lineName] = lineObj
             global.lineList[playerForceIndexString][selectedIndex] = lineName
-            global.lineListDisplay[playerForceIndexString][selectedIndex] = util.signalToRichTextImg(signal) ..
-                " - " .. lineName
+            global.lineListDisplay[playerForceIndexString][selectedIndex] = util.signalToRichTextImg(signal) .. " - " .. lineName
 
             globalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
             globalPlayer.guis.simpleGuiButton.enabled = true
@@ -393,7 +412,13 @@ local function editLine(eventData)
 
                         if otherPlayer.force_index == player.force_index then
                             if otherGlobalPlayer.guis.simpleGuiStationListBox then
-                                otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+                                if otherGlobalPlayer.guis.simpleGuiStationListBox.valid then
+                                    otherGlobalPlayer.guis.simpleGuiStationListBox.items = global.lineListDisplay[playerForceIndexString]
+                                else
+                                    otherGlobalPlayer.guis.simpleGuiMain.destroy()
+
+                                    simpleGui.buildMainGui(otherGlobalPlayer, otherPlayer)
+                                end
 
                                 if otherGlobalPlayer.selectedIndex == selectedIndex then
                                     simpleGui.buildLineFrame(otherGlobalPlayer, lineName, lineObj)
