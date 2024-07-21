@@ -300,6 +300,7 @@ local function addNewLine(eventData)
             globalPlayer.guis.simpleGuiButton.enabled = true
             globalPlayer.guis.simpleGuiMain.visible = true
             globalPlayer.guis.simpleSubGuiAddTop.destroy()
+            globalPlayer.selectedIndex = newSelectedIndex
             globalPlayer.locomotive = nil
             globalPlayer.schedule = nil
 
