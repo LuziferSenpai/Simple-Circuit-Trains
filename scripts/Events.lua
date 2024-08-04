@@ -225,7 +225,7 @@ eventsLib.events = {
                     if newTrainSchedule then
                         for i = 1, #newTrainSchedule.records do
                             if newTrainSchedule.records[i].temporary then
-                                newTrainSchedule.records[i] = nil
+                                table.remove(newTrainSchedule.records, i)
                             end
                         end
 

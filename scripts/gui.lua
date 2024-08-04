@@ -173,8 +173,9 @@ local function deleteSelectedLine(eventData)
     local selectedIndex = globalPlayer.selectedIndex
     local lineName = global.lineList[playerForceIndexString][selectedIndex]
 
-    global.lineList[playerForceIndexString][selectedIndex] = nil
-    global.lineListDisplay[playerForceIndexString][selectedIndex] = nil
+    table.remove(global.lineList[playerForceIndexString], selectedIndex)
+    table.remove(global.lineListDisplay[playerForceIndexString], selectedIndex)
+
     global.lines[playerForceIndexString][lineName] = nil
 
     globalPlayer.guis.simpleGuiStationListBox.selected_index = 0
@@ -394,6 +395,7 @@ local function editLine(eventData)
             train.schedule = globalPlayer.schedule
 
             global.openTrains[tostring(train.id)] = nil
+
             global.lines[playerForceIndexString][selectedLineName] = nil
             global.lines[playerForceIndexString][lineName] = lineObj
             global.lineList[playerForceIndexString][selectedIndex] = lineName
